@@ -31,7 +31,7 @@ const S = {
   strokeWidth:  1.5,
 
   // which corners receive the notch cut
-  activeCorners: { tl: false, tr: true, br: true, bl: false },
+  activeCorners: { tl: false, tr: false, br: true, bl: false },
 
   // colour & fill
   accentColor:  '#e84142',
