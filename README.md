@@ -1,3 +1,5 @@
+## Demo: https://npanium.github.io/svg-button-morphing-lab/
+
 # SVG Button Morphing Lab
 
 An interactive browser tool for designing and exporting animated SVG buttons with notched corners, HUD bracket overlays, click ripple effects, and text glitch — all configurable in real time with a live code export in React, HTML/JS, and CSS.
