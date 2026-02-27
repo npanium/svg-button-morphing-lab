@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="author" content="NPaNium" />
+    <title>SVG Button Morphing Lab</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- ── HEADER ────────────────────────────────────────────────────────────── -->
+    <header>
+      <div class="dot"></div>
+      <h1>SVG Button Morphing Lab</h1>
+      <div class="tag">v1.0</div>
+    </header>
+
+    <!-- ── MAIN WORKSPACE ────────────────────────────────────────────────────── -->
+    <div class="workspace">
+      <!-- LEFT: PREVIEW ────────────────────────────────────────────────────── -->
+      <div class="preview" id="previewEl">
+        <!-- Button sits here, vertically centred in the upper cell -->
+        <div class="btn-stage">
+          <div style="position: relative">
+            <div class="btn-wrapper" id="techBtn">
+              <span class="btn-label" id="btnLabel">EXPLORE NETWORK</span>
+              <!-- Animated shape sits behind the label -->
+              <svg class="btn-svg"><path id="morphPath"></path></svg>
+              <!-- HUD bracket overlay — drawn by engine.js each frame -->
+              <svg
+                id="hudSvg"
+                style="
+                  position: absolute;
+                  top: 0;
+                  left: 0;
+                  width: 100%;
+                  height: 100%;
+                  pointer-events: none;
+                  overflow: visible;
+                  z-index: 10;
+                "
+              ></svg>
+            </div>
+
+            <!-- Corner indicators (TL / TR / BR / BL) -->
+            <div class="clabels">
+              <div class="ci ci-tl" id="ci-tl">TL</div>
+              <div class="ci ci-tr" id="ci-tr">TR</div>
+              <div class="ci ci-br" id="ci-br">BR</div>
+              <div class="ci ci-bl" id="ci-bl">BL</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ripple canvas — covers the full preview area -->
+        <canvas
+          id="ripCanvas"
+          style="
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 5;
+          "
+        >
+        </canvas>
+
+        <!-- Code output anchored to the bottom of the preview -->
+        <div class="code-area">
+          <div class="code-box">
+            <div class="code-tabs">
+              <div class="code-tab active" data-tab="react">React</div>
+              <div class="code-tab" data-tab="html">HTML + JS</div>
+              <div class="code-tab" data-tab="css">CSS</div>
+            </div>
+            <div class="code-content active" id="tab-react">
+              <pre id="codeReact"></pre>
+            </div>
+            <div class="code-content" id="tab-html">
+              <pre id="codeHtml"></pre>
+            </div>
+            <div class="code-content" id="tab-css">
+              <pre id="codeCss"></pre>
+            </div>
+            <button class="copy-btn" id="copyBtn">COPY</button>
+          </div>
+        </div>
+      </div>
+      <!-- /preview -->
+
+      <!-- RIGHT: CONTROL PANEL ──────────────────────────────────────────────── -->
+      <div class="panel">
+        <!-- NOTCH SHAPE ────────────────────────────────────────────────────── -->
+        <div class="section">
+          <div class="stitle">Notch Shape</div>
+
+          <div class="sr">
+            <div>
+              <div class="sl">Notch Size (hover)</div>
+              <input type="range" id="notchHover" min="0" max="80" value="35" />
+            </div>
+            <div class="vb" id="notchHoverVal">35</div>
+          </div>
+          <div class="sr">
+            <div>
+              <div class="sl">Notch Size (default)</div>
+              <input
+                type="range"
+                id="notchDefault"
+                min="0"
+                max="40"
+                value="12"
+              />
+            </div>
+            <div class="vb" id="notchDefaultVal">12</div>
+          </div>
+          <div class="sr">
+            <div>
+              <div class="sl">Notch Curvature</div>
+              <input type="range" id="notchCurve" min="0" max="100" value="0" />
+            </div>
+            <div class="vb" id="notchCurveVal">0</div>
+          </div>
+          <div class="sr">
+            <div>
+              <div class="sl">Corner Radius (inactive)</div>
+              <input
+                type="range"
+                id="cornerRadius"
+                min="0"
+                max="40"
+                value="8"
+              />
+            </div>
+            <div class="vb" id="cornerRadiusVal">8</div>
+          </div>
+          <div class="sr">
+            <div>
+              <div class="sl">Animation Speed</div>
+              <input type="range" id="animSpeed" min="1" max="30" value="12" />
+            </div>
+            <div class="vb" id="animSpeedVal">0.12</div>
+          </div>
+          <div class="sr">
+            <div>
+              <div class="sl">Stroke Width</div>
+              <input
+                type="range"
+                id="strokeWidth"
+                min="0.5"
+                max="10"
+                step="0.5"
+                value="1.5"
+              />
+            </div>
+            <div class="vb" id="strokeWidthVal">1.5</div>
+          </div>
+        </div>
+
+        <!-- ACTIVE CORNERS ─────────────────────────────────────────────────── -->
+        <div class="section">
+          <div class="stitle">Active Corners</div>
+          <div class="cgrid">
+            <div class="ctog" id="toggle-tl" data-corner="tl">
+              <div class="tdot"></div>
+              <span>Top Left</span>
+            </div>
+            <div class="ctog active" id="toggle-tr" data-corner="tr">
+              <div class="tdot"></div>
+              <span>Top Right</span>
+            </div>
+            <div class="ctog" id="toggle-bl" data-corner="bl">
+              <div class="tdot"></div>
+              <span>Bot Left</span>
+            </div>
+            <div class="ctog active" id="toggle-br" data-corner="br">
+              <div class="tdot"></div>
+              <span>Bot Right</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- HOVER BEHAVIOR ─────────────────────────────────────────────────── -->
+        <div class="section">
+          <div class="stitle">Hover Behavior</div>
+          <div class="tr">
+            <span>Fill on hover</span>
+            <label class="switch"
+              ><input type="checkbox" id="fillToggle" checked /><span
+                class="strack"
+              ></span
+            ></label>
+          </div>
+          <div class="tr">
+            <span>Stroke color only</span>
+            <label class="switch"
+              ><input type="checkbox" id="strokeToggle" /><span
+                class="strack"
+              ></span
+            ></label>
+          </div>
+          <div class="tr">
+            <span>Invert text on hover</span>
+            <label class="switch"
+              ><input type="checkbox" id="invertToggle" /><span
+                class="strack"
+              ></span
+            ></label>
+          </div>
+        </div>
+
+        <!-- FX ─────────────────────────────────────────────────────────────── -->
+        <div class="section">
+          <div class="stitle">FX</div>
+
+          <!-- HUD brackets -->
+          <div class="fxr on" id="fxRow-hud">
+            <span>HUD Corner Brackets</span>
+            <label class="switch"
+              ><input type="checkbox" id="fxHud" checked /><span
+                class="strack"
+              ></span
+            ></label>
+          </div>
+          <div class="fx-sub visible" id="sub-hud">
+            <div class="fx-sub-label">Bracket Options</div>
+            <div class="sr">
+              <div>
+                <div class="sl">Bracket Size</div>
+                <input type="range" id="hudSize" min="4" max="28" value="12" />
+              </div>
+              <div class="vb" id="hudSizeVal">12</div>
+            </div>
+            <div class="sr">
+              <div>
+                <div class="sl">Offset (− overlaps, + away)</div>
+                <input
+                  type="range"
+                  id="hudOffset"
+                  min="-20"
+                  max="24"
+                  value="6"
+                />
+              </div>
+              <div class="vb" id="hudOffsetVal">6</div>
+            </div>
+            <div class="sr">
+              <div>
+                <div class="sl">Corner Radius</div>
+                <input type="range" id="hudRadius" min="0" max="12" value="0" />
+              </div>
+              <div class="vb" id="hudRadiusVal">0</div>
+            </div>
+            <div class="tr" style="margin-top: 4px">
+              <span>Flip outward</span>
+              <label class="switch"
+                ><input type="checkbox" id="hudFlip" /><span
+                  class="strack"
+                ></span
+              ></label>
+            </div>
+          </div>
+
+          <!-- Ripple -->
+          <div class="fxr on" id="fxRow-ripple">
+            <span>Click Ripple</span>
+            <label class="switch"
+              ><input type="checkbox" id="fxRipple" checked /><span
+                class="strack"
+              ></span
+            ></label>
+          </div>
+          <div class="fx-sub visible" id="sub-ripple">
+            <div class="fx-sub-label">Ripple Options</div>
+            <div class="sr">
+              <div>
+                <div class="sl">Scale Amount</div>
+                <input
+                  type="range"
+                  id="ripScale"
+                  min="1.05"
+                  max="2.5"
+                  step="0.05"
+                  value="1.6"
+                />
+              </div>
+              <div class="vb" id="ripScaleVal">1.6</div>
+            </div>
+            <div class="sr">
+              <div>
+                <div class="sl">Ripple Count</div>
+                <input
+                  type="range"
+                  id="ripCount"
+                  min="1"
+                  max="4"
+                  step="1"
+                  value="2"
+                />
+              </div>
+              <div class="vb" id="ripCountVal">2</div>
+            </div>
+            <div class="tr" style="margin-top: 4px">
+              <span>Dashed stroke</span>
+              <label class="switch"
+                ><input type="checkbox" id="ripDash" /><span
+                  class="strack"
+                ></span
+              ></label>
+            </div>
+            <!-- Dash controls — hidden until ripDash is checked -->
+            <div class="sr" id="dashLenRow" style="display: none">
+              <div>
+                <div class="sl">Dash Length</div>
+                <input
+                  type="range"
+                  id="ripDashLen"
+                  min="2"
+                  max="20"
+                  value="6"
+                />
+              </div>
+              <div class="vb" id="ripDashLenVal">6</div>
+            </div>
+            <div class="sr" id="dashGapRow" style="display: none">
+              <div>
+                <div class="sl">Dash Gap</div>
+                <input
+                  type="range"
+                  id="ripDashGap"
+                  min="1"
+                  max="20"
+                  value="6"
+                />
+              </div>
+              <div class="vb" id="ripDashGapVal">6</div>
+            </div>
+          </div>
+
+          <!-- Text glitch -->
+          <div class="fxr on" id="fxRow-glitch">
+            <span>Text Glitch on Hover</span>
+            <label class="switch"
+              ><input type="checkbox" id="fxGlitch" checked /><span
+                class="strack"
+              ></span
+            ></label>
+          </div>
+        </div>
+
+        <!-- ACCENT COLOR ───────────────────────────────────────────────────── -->
+        <div class="section">
+          <div class="stitle">Accent Color</div>
+          <div class="swgrid">
+            <div
+              class="sw active"
+              data-color="#e84142"
+              style="background: #e84142"
+            ></div>
+            <div
+              class="sw"
+              data-color="#ff6b35"
+              style="background: #ff6b35"
+            ></div>
+            <div
+              class="sw"
+              data-color="#00d4ff"
+              style="background: #00d4ff"
+            ></div>
+            <div
+              class="sw"
+              data-color="#39ff14"
+              style="background: #39ff14"
+            ></div>
+            <div
+              class="sw"
+              data-color="#a855f7"
+              style="background: #a855f7"
+            ></div>
+            <div
+              class="sw"
+              data-color="#f59e0b"
+              style="background: #f59e0b"
+            ></div>
+            <div
+              class="sw"
+              data-color="#ffffff"
+              style="background: #ffffff"
+            ></div>
+            <div
+              class="sw"
+              data-color="#ec4899"
+              style="background: #ec4899"
+            ></div>
+          </div>
+          <div
+            style="
+              margin-top: 9px;
+              display: flex;
+              align-items: center;
+              gap: 7px;
+            "
+          >
+            <span style="font-size: 8.5px; color: var(--muted)">CUSTOM</span>
+            <input
+              type="color"
+              id="customColor"
+              value="#e84142"
+              style="
+                width: 23px;
+                height: 23px;
+                border: 1px solid var(--border);
+                background: transparent;
+                cursor: pointer;
+                padding: 1px;
+              "
+            />
+          </div>
+        </div>
+
+        <!-- PRESETS ────────────────────────────────────────────────────────── -->
+        <div class="section">
+          <div class="stitle">Presets</div>
+          <div class="pgrid">
+            <button class="pbtn" data-preset="avax">AVAX</button>
+            <button class="pbtn" data-preset="sharp">Sharp</button>
+            <button class="pbtn" data-preset="curved">Curved</button>
+            <button class="pbtn" data-preset="double">Double</button>
+            <button class="pbtn" data-preset="brutal">Brutal</button>
+            <button class="pbtn" data-preset="cyber">Cyber</button>
+          </div>
+        </div>
+      </div>
+      <!-- /panel -->
+    </div>
+    <!-- /workspace -->
+
+    <!-- ── FOOTER ────────────────────────────────────────────────────────────── -->
+    <footer>
+      <span>SVG MORPHING BUTTON LAB</span>
+      <span style="margin-left: auto">HOVER · CLICK · CONFIGURE</span>
+    </footer>
+
+    <!-- Scripts load in dependency order: engine → codegen → controls -->
+    <script src="engine.js"></script>
+    <script src="codegen.js"></script>
+    <script src="controls.js"></script>
+  </body>
+</html>
